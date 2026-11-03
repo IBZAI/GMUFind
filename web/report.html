@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GMUFind - Report a Found Item</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <a href = "index.html">
+            <img src = "images/gmufindlogo.png" alt="GMUFind" width="240">
+        </a>
+
+        <nav>
+            <a href="index.html">Browse Items</a>
+            <a href="report.html" class="active">Report a Found Item</a>
+            <img src="images/profileicon.png" alt="Profile" width="60">
+        </nav>
+    </header>
+
+    <main>
+            <form class="report-form">
+                <h1>Item Report Form</h1>
+                <div class="photo-upload">
+                    <label for="item-photo">Attatch an item photo:</label>
+                    <input type="file" id="item-photo" name="photo" accept="image/*">
+                </div>
+
+                <div class = "form-row">
+                    <label for="item-type">Item Type:</label>
+                    <input type="text" id="item-type" name="itemType">
+                </div>
+
+                <div class = "form-desc">
+                    <label for="item-desc">Description:</label>
+                    <textarea id="item-desc" name="itemDesc" rows="4"></textarea>
+                </div>
+
+                <div class = "form-row">
+                    <label for="item-date">Date Found:</label>
+                    <input type="text" id="item-date" name="itemDate">
+                </div>
+
+                <div class = "form-row">
+                    <label for="item-location">Location Found:</label>
+                    <input type="text" id="item-location" name="itemLocation">
+                </div>
+
+                <div class = "form-row">
+                    <label for="holding-location">Location Held:</label>
+                    <input type="text" id="holding-location" name="holdingLocation">
+                </div>
+
+                <button type="submit" class="submit-button">Submit</button>
+            </form>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
