@@ -80,7 +80,6 @@ app.post("/api/items", (req, res) => {
     const savedItem = db.prepare(`
         SELECT * FROM items WHERE id = ?
     `).get(result.lastInsertRowid);
-
     // Return saved item with generated ID
     res.status(201).json(savedItem);
 });
