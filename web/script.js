@@ -47,12 +47,42 @@ if(reportForm)
     });
 }
 
-//Displays submitted items on the Browse Items page
+//Displays submitted items on the Browse Items page, loaded from GET /api/items
 if(itemsContainer)
     {
-    const items = JSON.parse(sessionStorage.getItem("items")) || [];
+    loadItems();
+}
 
-    items.forEach(function(item)
+//Asks the ItemService for the items, then renders them (or a status message)
+async function loadItems() {
+    showMessage("Loading items...");
+
+    try {
+        const items = await ItemService.getItems();
+
+        if (items.length === 0) {
+            showMessage("No items have been reported yet.");
+            return;
+        }
+
+        itemsContainer.replaceChildren();
+        items.forEach(renderItemCard);
+    } catch (error) {
+        console.error(error);
+        showMessage("Could not load items. Make sure the server is running and refresh the page.");
+    }
+}
+
+//Replaces the item list with a single status message
+function showMessage(text) {
+    const message = document.createElement("p");
+    message.className = "items-message";
+    message.textContent = text;
+    itemsContainer.replaceChildren(message);
+}
+
+//Builds one item card and adds it to the Browse Items page
+function renderItemCard(item)
     {
         const card = document.createElement("div");
         card.className = "item-card";
@@ -90,5 +120,4 @@ if(itemsContainer)
         });
 
         itemsContainer.appendChild(card);
-    });
 }
