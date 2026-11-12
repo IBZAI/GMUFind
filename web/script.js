@@ -21,14 +21,28 @@ if(reportForm)
             photo: ""
         };
 
-        //Gets the previously submitted items
-        const items = JSON.parse(sessionStorage.getItem("items")) || [];
+        //The reported item is sent to the Express server
+        async function saveItem(){
+            try {
+                const response=await fetch("/api/items", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(item)
+                });
 
-        //Saves the new item and open the Browse Items page
-        function saveItem(){
-            items.push(item);
-            sessionStorage.setItem("items", JSON.stringify(items));
-            window.location.href = "index.html";
+                //The item is redirected if it was submitted successfully
+                if(response.ok)
+                {
+                    window.location.href="index.html";
+                } else {
+                    const error=await response.json();
+                    alert(error.error||"Could not submit the item.");
+                }
+            } catch (error) {
+                alert("Could not connect to the server.");
+            }
         }
 
         //Reads the uploaded photo if one was actually selected
