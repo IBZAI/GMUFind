@@ -18,6 +18,31 @@ if(reportForm)
             holdingLocation: document.getElementById("holding-location").value,
             photo: ""
         };
+
+        //The reported item is sent to the Express server
+        async function saveItem(){
+            try {
+                const response=await fetch("/api/items", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(item)
+                });
+
+                //The item is redirected if it was submitted successfully
+                if(response.ok)
+                {
+                    window.location.href="index.html";
+                } else {
+                    const error=await response.json();
+                    alert(error.error||"Could not submit the item.");
+                }
+            } catch (error) {
+                alert("Could not connect to the server.");
+            }
+        }
+
         //Reads the uploaded photo if one was actually selected
         if (photo) {
             const reader = new FileReader();
