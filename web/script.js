@@ -5,12 +5,10 @@ const itemsContainer = document.getElementById("items-container");
 //Handles submitting a found item
 if(reportForm)
     {
-    reportForm.addEventListener("submit", function(event) {
+    reportForm.addEventListener("submit", async function(event) {
         event.preventDefault();
-
         const photoInput = document.getElementById("item-photo");
         const photo = photoInput.files[0];
-
         //Collects the information from the form itself
         const item = {
             type: document.getElementById("item-type").value,
@@ -20,75 +18,87 @@ if(reportForm)
             holdingLocation: document.getElementById("holding-location").value,
             photo: ""
         };
-
-        //Gets the previously submitted items
-        const items = JSON.parse(sessionStorage.getItem("items")) || [];
-
-        //Saves the new item and open the Browse Items page
-        function saveItem(){
-            items.push(item);
-            sessionStorage.setItem("items", JSON.stringify(items));
-            window.location.href = "index.html";
-        }
-
         //Reads the uploaded photo if one was actually selected
         if (photo) {
             const reader = new FileReader();
-
-            reader.onload = function() {
+            reader.onload = async function() {
                 item.photo = reader.result;
-                saveItem();
+                await saveItem(item);
             };
-
             reader.readAsDataURL(photo);
-        } else{
-            saveItem();
+        } else {
+            await saveItem(item);
         }
     });
 }
 
-//Displays submitted items on the Browse Items page
-if(itemsContainer)
-    {
-    const items = JSON.parse(sessionStorage.getItem("items")) || [];
-
-    items.forEach(function(item)
-    {
-        const card = document.createElement("div");
-        card.className = "item-card";
-
-        const heading = document.createElement("h2");
-        heading.textContent = item.type;
-        card.appendChild(heading);
-
-        //Displays the uploaded photo
-        if (item.photo)
-        {
-            const image = document.createElement("img");
-            image.src = item.photo;
-            image.alt = "Found item";
-            card.appendChild(image);
-        }
-
-        //Displays the item details
-        const details=[
-            ["Description", item.description],
-            ["Date Found", item.date],
-            ["Location Found", item.location],
-            ["Location Held", item.holdingLocation]
-        ];
-
-        details.forEach(function(detail) {
-            const paragraph=document.createElement("p");
-            const label=document.createElement("strong");
-
-            label.textContent=detail[0] + ": ";
-            paragraph.appendChild(label);
-            paragraph.appendChild(document.createTextNode(detail[1]));
-
-            card.appendChild(paragraph);
+// Saves item to SQLite through the backend
+async function saveItem(item) {
+    try {
+        const response = await fetch("/api/items", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(item)
         });
+        if (!response.ok) {
+            throw new Error("Failed to save item");
+        }
+        const savedItem = await response.json();
+        console.log("Saved item:", savedItem);
+        window.location.href = "index.html";
+    } catch (error) {
+        console.error("Error saving item:", error);
+        alert("Unable to save item: " + error.message);
+    }
+}
 
-        itemsContainer.appendChild(card);
-    });
+// Displays submitted items on the Browse Items page
+if (itemsContainer) {
+    async function loadItems() {
+        try {
+            const response = await fetch("/api/items");
+            if (!response.ok) {
+                throw new Error("Failed to retrieve items");
+            }
+            const items = await response.json();
+            items.forEach(function(item) {
+                const card = document.createElement("div");
+                card.className = "item-card";
+                const heading = document.createElement("h2");
+                heading.textContent = item.type;
+                card.appendChild(heading);
+                // Displays uploaded photo
+                if (item.photo) {
+                    const image = document.createElement("img");
+                    image.src = item.photo;
+                    image.alt = "Found item";
+                    card.appendChild(image);
+                }
+                // Displays item details
+                const details = [
+                    ["Description", item.description],
+                    ["Date Found", item.date],
+                    ["Location Found", item.location],
+                    ["Location Held", item.holdingLocation]
+                ];
+                details.forEach(function(detail) {
+                    const paragraph = document.createElement("p");
+                    const label = document.createElement("strong");
+                    label.textContent = detail[0] + ": ";
+                    paragraph.appendChild(label);
+                    paragraph.appendChild(
+                        document.createTextNode(detail[1])
+                    );
+                    card.appendChild(paragraph);
+                });
+                itemsContainer.appendChild(card);
+            });
+        } catch (error) {
+            console.error("Error:", error);
+            itemsContainer.textContent = "Unable to load items.";
+        }
+    }
+    loadItems();
 }
