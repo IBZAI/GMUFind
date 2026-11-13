@@ -100,6 +100,12 @@ nav a.active {
     margin-top: 30px;
 }
 
+.items-message {
+    width: 100%;
+    text-align: center;
+    font-size: 18px;
+}
+
 .item-card{
     background-color: #ffcc33;
     color: #1a1a1a;

@@ -57,73 +57,78 @@ if(reportForm)
     });
 }
 
-// Saves item to SQLite through the backend
-async function saveItem(item) {
+
+//Displays submitted items on the Browse Items page, loaded from GET /api/items
+if(itemsContainer)
+    {
+    loadItems();
+}
+
+//Asks the ItemService for the items, then renders them (or a status message)
+async function loadItems() {
+    showMessage("Loading items...");
+
     try {
-        const response = await fetch("/api/items", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(item)
-        });
-        if (!response.ok) {
-            throw new Error("Failed to save item");
+        const items = await ItemService.getItems();
+
+        if (items.length === 0) {
+            showMessage("No items have been reported yet.");
+            return;
         }
-        const savedItem = await response.json();
-        console.log("Saved item:", savedItem);
-        window.location.href = "index.html";
+
+        itemsContainer.replaceChildren();
+        items.forEach(renderItemCard);
     } catch (error) {
-        console.error("Error saving item:", error);
-        alert("Unable to save item: " + error.message);
+        console.error(error);
+        showMessage("Could not load items. Make sure the server is running and refresh the page.");
     }
 }
 
-// Displays submitted items on the Browse Items page
-if (itemsContainer) {
-    async function loadItems() {
-        try {
-            const response = await fetch("/api/items");
-            if (!response.ok) {
-                throw new Error("Failed to retrieve items");
-            }
-            const items = await response.json();
-            items.forEach(function(item) {
-                const card = document.createElement("div");
-                card.className = "item-card";
-                const heading = document.createElement("h2");
-                heading.textContent = item.type;
-                card.appendChild(heading);
-                // Displays uploaded photo
-                if (item.photo) {
-                    const image = document.createElement("img");
-                    image.src = item.photo;
-                    image.alt = "Found item";
-                    card.appendChild(image);
-                }
-                // Displays item details
-                const details = [
-                    ["Description", item.description],
-                    ["Date Found", item.date],
-                    ["Location Found", item.location],
-                    ["Location Held", item.holdingLocation]
-                ];
-                details.forEach(function(detail) {
-                    const paragraph = document.createElement("p");
-                    const label = document.createElement("strong");
-                    label.textContent = detail[0] + ": ";
-                    paragraph.appendChild(label);
-                    paragraph.appendChild(
-                        document.createTextNode(detail[1])
-                    );
-                    card.appendChild(paragraph);
-                });
-                itemsContainer.appendChild(card);
-            });
-        } catch (error) {
-            console.error("Error:", error);
-            itemsContainer.textContent = "Unable to load items.";
+//Replaces the item list with a single status message
+function showMessage(text) {
+    const message = document.createElement("p");
+    message.className = "items-message";
+    message.textContent = text;
+    itemsContainer.replaceChildren(message);
+}
+
+//Builds one item card and adds it to the Browse Items page
+function renderItemCard(item)
+    {
+        const card = document.createElement("div");
+        card.className = "item-card";
+
+        const heading = document.createElement("h2");
+        heading.textContent = item.type;
+        card.appendChild(heading);
+
+        //Displays the uploaded photo
+        if (item.photo)
+        {
+            const image = document.createElement("img");
+            image.src = item.photo;
+            image.alt = "Found item";
+            card.appendChild(image);
         }
-    }
-    loadItems();
+
+        //Displays the item details
+        const details=[
+            ["Description", item.description],
+            ["Date Found", item.date],
+            ["Location Found", item.location],
+            ["Location Held", item.holdingLocation]
+        ];
+
+        details.forEach(function(detail) {
+            const paragraph=document.createElement("p");
+            const label=document.createElement("strong");
+
+            label.textContent=detail[0] + ": ";
+            paragraph.appendChild(label);
+            paragraph.appendChild(document.createTextNode(detail[1]));
+
+            card.appendChild(paragraph);
+        });
+
+        itemsContainer.appendChild(card);
 }
